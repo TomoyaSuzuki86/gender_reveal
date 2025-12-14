@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Gender Reveal</title>
+  <style>
+    :root{
+      --bg:#f7ffdc;
+      --text:#222;
+      --boy:#add8ff;
+      --girl:#ffc3d9;
+      --muted:#666;
+      --shadow: 0 10px 30px rgba(0,0,0,.06);
+      --radius: 24px;
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Segoe UI", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app { min-height: 100%; display: grid; grid-template-rows: 1fr; }
+
+    .screen {
+      display: none;
+      min-height: 100vh;
+      padding: calc(24px + var(--safe-top)) 18px calc(24px + var(--safe-bottom));
+      box-sizing: border-box;
+    }
+    .screen.active { display: block; }
+
+    .center {
+      max-width: 520px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+      justify-items: center;
+    }
+
+    .title {
+      font-size: 22px;
+      line-height: 1.5;
+      text-align: center;
+      font-weight: 600;
+      letter-spacing: .02em;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      line-height: 1.7;
+      text-align: center;
+      color: var(--muted);
+      max-width: 36ch;
+    }
+
+    .btn {
+      border: 3px solid rgba(0,0,0,.55);
+      background: #fff;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+      box-shadow: var(--shadow);
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:focus-visible { outline: 4px solid rgba(0,0,0,.18); outline-offset: 4px; }
+
+    .btn-row {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 14px 18px calc(14px + var(--safe-bottom));
+      box-sizing: border-box;
+      background: linear-gradient(to top, rgba(255,255,255,.98), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+    .btn-row > * { pointer-events: auto; }
+
+    .balloon-wrap {
+      width: 100%;
+      display: grid;
+      place-items: center;
+      margin-top: 6px;
+      user-select: none;
+    }
+
+    .balloon {
+      width: 170px;
+      height: 240px;
+      cursor: pointer;
+      touch-action: manipulation;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,.05));
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    .balloon:active { transform: translateY(1px); }
+    .balloon:focus-visible { outline: 4px solid rgba(0,0,0,.18); outline-offset: 8px; border-radius: 30px; }
+
+    /* カウント中の画像枠 */
+    .count-visual {
+      width: 100%;
+      display: grid;
+      place-items: center;
+      margin-top: 6px;
+    }
+
+    .count-frame {
+      width: min(340px, 86vw);
+      height: min(340px, 86vw);
+      border-radius: 28px;
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .count-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .count-placeholder {
+      font-size: 16px;
+      color: rgba(0,0,0,.55);
+      text-align: center;
+      padding: 16px;
+    }
+
+    .count-overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: .02em;
+      color: var(--text);
+      text-shadow: 0 2px 0 rgba(255,255,255,.8);
+      pointer-events: none;
+      top: 400px;
+    }
+
+    /* 発表画面 */
+    .reveal {
+      display: grid;
+      gap: 18px;
+      justify-items: center;
+      align-content: center;
+      min-height: calc(100vh - 120px);
+    }
+
+    .reveal-img {
+    width: min(320px, 78vw);
+    height: min(320px, 78vw);
+    border-radius: 24px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    position: relative;
+    }
+
+    .reveal-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .reveal-error {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.85);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .reveal-error[hidden] { display: none; }
+
+    .fade-in { animation: fadeIn .45s ease-out both; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 軽い紙吹雪 */
+    .confetti {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: .8;
+    }
+    .confetti i{
+      position: absolute;
+      top: -10vh;
+      width: 10px;
+      height: 14px;
+      border-radius: 3px;
+      background: rgba(255,255,255,.9);
+      transform: rotate(12deg);
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      to { transform: translateY(120vh) rotate(200deg); opacity: 0.9; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fade-in { animation: none; }
+      .confetti { display: none; }
+      .balloon { filter: none; }
+      .btn:active, .balloon:active { transform: none; }
+    }
+
+    @media (max-height: 700px) {
+      .balloon { width: 150px; height: 215px; }
+    }
+
+    body.bg-boy { background: var(--boy); }
+    body.bg-girl { background: var(--girl); }
+    body.bg-white { background: #fff; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <div class="app" id="app">
+
+    <!-- Screen: 風船タップ（最初の画面） -->
+    <section class="screen active" id="screen-start" aria-label="開始">
+      <div class="center">
+        <div style="height: 16vh;"></div>
+        <div class="title" id="start-title">
+          風船をタップしてください。<br>
+          タップしてから<span id="secs-here">30</span>秒後に性別が公開されます。
+        </div>
+
+        <div class="balloon-wrap">
+          <button class="balloon" id="balloon-start" type="button" aria-label="風船をタップして開始">
+            <svg viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M100 20c-44 0-74 36-74 78 0 58 40 102 74 102s74-44 74-102c0-42-30-78-74-78z" fill="none" stroke="#111" stroke-width="10" />
+              <path d="M92 200c0 10 16 10 16 0" fill="none" stroke="#111" stroke-width="10" stroke-linecap="round" />
+              <path d="M100 208v56" fill="none" stroke="#111" stroke-width="10" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+        <div style="height: 22vh;"></div>
+      </div>
+    </section>
+
+    <!-- Screen: カウントダウン -->
+    <section class="screen" id="screen-count" aria-label="カウントダウン">
+      <div class="center">
+        <div style="height: 10vh;"></div>
+        <div class="title" id="count-title">ドキドキ…</div>
+
+        <div class="count-visual" aria-hidden="true">
+          <div class="count-frame">
+            <img id="count-img" alt="待機中の画像" />
+            <div class="count-placeholder" id="count-placeholder" hidden>待機画像を設定してください</div>
+          </div>
+        </div>
+        <div class="count-overlay" id="count-num">30</div>
+
+        <div class="sr-only" aria-live="polite" id="count-aria">残り30秒</div>
+        <div style="height: 20vh;"></div>
+      </div>
+    </section>
+
+    <!-- Screen: 発表 -->
+    <section class="screen" id="screen-reveal" aria-label="発表">
+      <div class="center reveal">
+        <div class="reveal-img fade-in" id="reveal-box">
+          <img id="reveal-img" alt="発表画像" />
+          <div class="reveal-error" id="reveal-error" hidden>
+            <div>
+              <div style="font-weight:800; margin-bottom:8px;">画像を読み込めませんでした</div>
+              <button class="btn" id="btn-retry" type="button">再読込</button>
+            </div>
+          </div>
+        </div>
+        <div class="title fade-in" id="reveal-text">おめでとうございます！</div>
+        <div class="subtitle fade-in" id="reveal-sub"> </div>
+      </div>
+
+      <div class="btn-row" role="group" aria-label="操作">
+        <button class="btn" id="btn-reset" type="button">最初から</button>
+        <span></span>
+      </div>
+
+      <div class="confetti" id="confetti" aria-hidden="true"></div>
+    </section>
+
+  </div>
+
+  <script>
+    /**
+     * ここだけ触ればOKな設定
+     */
+    const CONFIG = {
+      // 性別（QRコードのリンク先ごとに固定する想定）
+      // "boy" | "girl"
+      gender: "boy",
+
+      // カウント秒（既定30）
+      revealSeconds: 30,
+
+      // 発表画像（あなたの画像に差し替え）
+      boyImageUrl: "./assets/boy.png",
+      girlImageUrl: "./assets/girl.png",
+
+      // 待機中に5秒ごとに順番で出す画像（ランダムではない）
+      // 30秒なら、6枚あるとちょうどよいです。
+      // 足りない場合は、最後の画像を残り時間ずっと表示します。
+      countdownImageUrls: [
+        "./assets/wait-01.png",
+        "./assets/wait-02.png",
+        "./assets/wait-03.png",
+        "./assets/wait-04.png",
+        "./assets/wait-05.png",
+        "./assets/wait-06.png"
+      ],
+
+      // カウント中に5秒おきで出すメッセージ（性別に関係なくランダム）
+      // "\n" を入れると改行になります。
+      messagePool: [
+        "ドキドキ…",
+        "もうすぐ…！",
+        "深呼吸…",
+        "心の準備はいい？",
+        "あとちょっと！",
+        "わくわくしてきた…！",
+        "みんな、注目ー！",
+        "想像してみて…",
+        "運命の30秒…",
+        "手に汗…！",
+        "ここからが本番",
+        "まだ見ないでね？",
+        "目を閉じてもいいよ",
+        "いくよ、いくよ…",
+        "拍手の準備！",
+        "祈って…",
+        "ドキドキが止まらない",
+        "まもなく公開…",
+        "今日の主役、登場間近",
+        "でもやっぱり\n一番大事なのは健康ですよね"
+      ],
+
+      // 性別ごとの発表テキスト
+      text: {
+        boy: { revealTitle: "男の子です！", revealSub: "やっぱりね～～！！" },
+        girl: { revealTitle: "女の子です！", revealSub: "男の子だと思ってたでしょ～!" }
+      },
+
+      // URLパラメータで上書き（任意。基本はfalse）
+      // 例: ?gender=girl
+      enableUrlParamOverride: false
+    };
+
+    /** 状態 */
+    let selectedGender = null; // "boy" | "girl"
+    let countdownTimer = null;
+    let countdownStartMs = null;
+    let countdownEndMs = null;
+    let started = false;
+
+    // 5秒おきメッセージ/画像用
+    let lastBucket = -1;
+    let lastMessage = "";
+
+    // DOM
+    const screens = {
+      start: document.getElementById('screen-start'),
+      count: document.getElementById('screen-count'),
+      reveal: document.getElementById('screen-reveal'),
+    };
+
+    const balloonStart = document.getElementById('balloon-start');
+
+    const secsHere = document.getElementById('secs-here');
+    const countTitle = document.getElementById('count-title');
+    const countNum = document.getElementById('count-num');
+    const countImg = document.getElementById('count-img');
+    const countPlaceholder = document.getElementById('count-placeholder');
+    const countAria = document.getElementById('count-aria');
+
+    const revealImg = document.getElementById('reveal-img');
+    const revealError = document.getElementById('reveal-error');
+    const btnRetry = document.getElementById('btn-retry');
+    const revealText = document.getElementById('reveal-text');
+    const revealSub = document.getElementById('reveal-sub');
+    const btnReset = document.getElementById('btn-reset');
+
+    const confetti = document.getElementById('confetti');
+
+    function goTo(name) {
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      screens[name].classList.add('active');
+
+      if (name === 'reveal') {
+        document.body.classList.remove('bg-white');
+        document.body.classList.toggle('bg-boy', selectedGender === 'boy');
+        document.body.classList.toggle('bg-girl', selectedGender === 'girl');
+      } else {
+        document.body.classList.remove('bg-boy', 'bg-girl');
+        document.body.classList.add('bg-white');
+      }
+
+      window.scrollTo(0, 0);
+    }
+
+    function preload(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => reject(new Error('image load failed: ' + url));
+        img.src = url;
+      });
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function resolveGender() {
+      let g = CONFIG.gender;
+      if (CONFIG.enableUrlParamOverride) {
+        const p = new URLSearchParams(location.search);
+        const q = p.get('gender');
+        if (q === 'boy' || q === 'girl') g = q;
+      }
+      return (g === 'boy' || g === 'girl') ? g : null;
+    }
+
+    function init() {
+      selectedGender = resolveGender();
+
+      secsHere.textContent = String(CONFIG.revealSeconds);
+      countNum.textContent = String(CONFIG.revealSeconds);
+      countAria.textContent = `残り${CONFIG.revealSeconds}秒`;
+
+      // 画像プリロード（失敗しても進行）
+      if (selectedGender) {
+        const revealUrl = (selectedGender === 'boy') ? CONFIG.boyImageUrl : CONFIG.girlImageUrl;
+        const waitUrls = Array.isArray(CONFIG.countdownImageUrls) ? CONFIG.countdownImageUrls : [];
+        Promise.allSettled([preload(revealUrl), ...waitUrls.map(preload)]).catch(() => {});
+      } else {
+        console.error('CONFIG.gender が "boy" または "girl" になっていません。');
+      }
+
+      goTo('start');
+      setTimeout(() => balloonStart.focus(), 0);
+    }
+
+    balloonStart.addEventListener('click', () => {
+      if (!selectedGender) return;
+      if (started) return;
+      started = true;
+      startCountdown(CONFIG.revealSeconds);
+    });
+
+    function startCountdown(seconds) {
+      const now = Date.now();
+      countdownStartMs = now;
+      countdownEndMs = now + (seconds * 1000);
+
+      lastBucket = -1;
+      lastMessage = "";
+
+      // 先に1枚目
+      setCountdownImage(0);
+
+      goTo('count');
+      tickCountdown();
+      countdownTimer = setInterval(tickCountdown, 200);
+    }
+
+    function pickRandomMessage() {
+      const pool = CONFIG.messagePool;
+      if (!Array.isArray(pool) || pool.length === 0) return "";
+      if (pool.length === 1) return pool[0];
+
+      let msg = "";
+      for (let i = 0; i < 4; i++) {
+        msg = pool[Math.floor(Math.random() * pool.length)];
+        if (msg !== lastMessage) break;
+      }
+      return msg;
+    }
+
+    function setCountdownImage(bucket) {
+      const list = Array.isArray(CONFIG.countdownImageUrls) ? CONFIG.countdownImageUrls : [];
+      if (!countImg || !countPlaceholder) return;
+
+      if (list.length === 0) {
+        countImg.removeAttribute('src');
+        countPlaceholder.hidden = false;
+        countPlaceholder.textContent = '待機画像を設定してください';
+        return;
+      }
+
+      countPlaceholder.hidden = true;
+
+      const idx = Math.min(bucket, list.length - 1);
+      const url = list[idx];
+      if (typeof url !== 'string' || url.trim() === '') return;
+
+      countImg.onerror = () => {
+        countImg.removeAttribute('src');
+        countPlaceholder.hidden = false;
+        countPlaceholder.textContent = '待機画像を読み込めませんでした';
+      };
+
+      if (countImg.getAttribute('data-src') !== url) {
+        countImg.setAttribute('data-src', url);
+        countImg.src = url;
+      }
+    }
+
+    function tickCountdown() {
+      const now = Date.now();
+      const msLeft = Math.max(0, countdownEndMs - now);
+      const secLeft = Math.ceil(msLeft / 1000);
+
+      countNum.textContent = String(secLeft);
+      countAria.textContent = `残り${secLeft}秒`;
+
+      const elapsedMs = Math.max(0, now - countdownStartMs);
+      const bucket = Math.floor(elapsedMs / 5000);
+
+      if (bucket !== lastBucket) {
+        lastBucket = bucket;
+
+        lastMessage = pickRandomMessage();
+        const safe = escapeHtml(lastMessage).replace(/\n/g, '<br>');
+        countTitle.innerHTML = safe;
+
+        setCountdownImage(bucket);
+      }
+
+      if (msLeft <= 0) {
+        stopCountdown();
+        reveal();
+      }
+    }
+
+    function stopCountdown() {
+      if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+      }
+    }
+
+    function reveal() {
+      const t = CONFIG.text[selectedGender];
+      revealText.textContent = t?.revealTitle ?? "おめでとうございます！";
+      revealSub.textContent = t?.revealSub ?? "";
+
+      revealError.hidden = true;
+
+      const url = (selectedGender === 'boy') ? CONFIG.boyImageUrl : CONFIG.girlImageUrl;
+      revealImg.onerror = () => { revealError.hidden = false; };
+      revealImg.onload = () => { revealError.hidden = true; };
+      revealImg.src = url;
+
+      goTo('reveal');
+      popConfetti();
+    }
+
+    btnRetry.addEventListener('click', () => {
+      const url = (selectedGender === 'boy') ? CONFIG.boyImageUrl : CONFIG.girlImageUrl;
+      revealError.hidden = true;
+      revealImg.src = url + `?t=${Date.now()}`;
+    });
+
+    function popConfetti() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      confetti.innerHTML = '';
+      const n = 26;
+      for (let i = 0; i < n; i++) {
+        const p = document.createElement('i');
+        const left = Math.random() * 100;
+        const delay = Math.random() * 0.2;
+        const dur = 1.2 + Math.random() * 0.9;
+        const size = 6 + Math.random() * 10;
+        p.style.left = left + 'vw';
+        p.style.animationDelay = delay + 's';
+        p.style.animationDuration = dur + 's';
+        p.style.width = size + 'px';
+        p.style.height = (size * 1.3) + 'px';
+        p.style.opacity = String(0.75 + Math.random() * 0.2);
+        confetti.appendChild(p);
+      }
+      setTimeout(() => { confetti.innerHTML = ''; }, 2200);
+    }
+
+    btnReset.addEventListener('click', () => {
+      stopCountdown();
+      started = false;
+      countdownStartMs = null;
+      countdownEndMs = null;
+      lastBucket = -1;
+      lastMessage = "";
+
+      document.body.classList.remove('bg-boy', 'bg-girl');
+      document.body.classList.add('bg-white');
+
+      countTitle.textContent = 'ドキドキ…';
+      countNum.textContent = String(CONFIG.revealSeconds);
+      countAria.textContent = `残り${CONFIG.revealSeconds}秒`;
+
+      revealError.hidden = true;
+      revealImg.removeAttribute('src');
+
+      goTo('start');
+      setTimeout(() => balloonStart.focus(), 0);
+    });
+
+    // Escapeでカウント中断（念のため）
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (screens.count.classList.contains('active')) {
+          stopCountdown();
+          started = false;
+          goTo('start');
+          setTimeout(() => balloonStart.focus(), 0);
+        }
+      }
+    });
+
+    /**
+     * 軽い自己テスト（コンソールに出すだけ）
+     */
+    function runSelfTests() {
+      const assert = (cond, msg) => { if (!cond) throw new Error('TEST FAILED: ' + msg); };
+
+      assert(CONFIG.gender === 'boy' || CONFIG.gender === 'girl', 'CONFIG.gender is boy|girl');
+      assert(Number.isFinite(CONFIG.revealSeconds) && CONFIG.revealSeconds > 0, 'revealSeconds > 0');
+
+      assert(Array.isArray(CONFIG.messagePool), 'messagePool is array');
+      assert(CONFIG.messagePool.length >= 20, 'messagePool has 20+ messages');
+      assert(CONFIG.messagePool.every(s => typeof s === 'string'), 'messagePool items are strings');
+
+      assert(Array.isArray(CONFIG.countdownImageUrls), 'countdownImageUrls is array');
+
+      assert(Math.floor(0 / 5000) === 0, 'bucket(0ms)=0');
+      assert(Math.floor(4999 / 5000) === 0, 'bucket(4999ms)=0');
+      assert(Math.floor(5000 / 5000) === 1, 'bucket(5000ms)=1');
+
+      const escaped = escapeHtml('a<b>c\n');
+      assert(escaped.includes('&lt;'), 'escapeHtml works');
+
+      console.log('[SelfTest] OK');
+    }
+
+    try { runSelfTests(); } catch (e) { console.error(e); }
+
+    init();
+  </script>
+</body>
+</html>
