@@ -1,0 +1,39 @@
+<svg width="600" height="600" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">枝を持ったハムスターと風船</title>
+  <desc id="desc">小さなハムスターが木の枝を振り上げて風船に当てようとしているイラスト</desc>
+  <defs>
+    <linearGradient id="balloonGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fff4d9" />
+      <stop offset="100%" stop-color="#ffe0f0" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" rx="60" fill="#f8fbff" />
+  <circle cx="430" cy="180" r="110" fill="url(#balloonGrad)" stroke="#1e1a1f" stroke-width="14" />
+  <path d="M430 290c0 12 18 12 18 0" stroke="#1e1a1f" stroke-width="10" stroke-linecap="round" fill="none" />
+  <path d="M439 301c0 48-20 68-36 108" stroke="#1e1a1f" stroke-width="10" stroke-linecap="round" fill="none" />
+  <path d="M312 360c-4-30 6-62 24-82 20-22 52-34 78-42" stroke="#ff9dcf" stroke-width="14" stroke-linecap="round" fill="none" stroke-dasharray="14 12" />
+  <g transform="translate(90 290)">
+    <ellipse cx="140" cy="140" rx="120" ry="110" fill="#ffe7c8" stroke="#1e1a1f" stroke-width="12" />
+    <ellipse cx="100" cy="110" rx="44" ry="52" fill="#fff6e8" stroke="#1e1a1f" stroke-width="10" />
+    <ellipse cx="186" cy="110" rx="44" ry="52" fill="#fff6e8" stroke="#1e1a1f" stroke-width="10" />
+    <circle cx="102" cy="120" r="8" fill="#1e1a1f" />
+    <circle cx="184" cy="120" r="8" fill="#1e1a1f" />
+    <path d="M138 162c8 14 24 14 32 0" stroke="#1e1a1f" stroke-width="8" fill="none" stroke-linecap="round" />
+    <path d="M60 180c-18 18-30 36-32 68" stroke="#1e1a1f" stroke-width="10" fill="none" stroke-linecap="round" />
+    <path d="M220 180c18 18 30 36 32 68" stroke="#1e1a1f" stroke-width="10" fill="none" stroke-linecap="round" />
+    <ellipse cx="140" cy="200" rx="60" ry="24" fill="#fbd0a7" />
+    <path d="M64 204c-24 20-42 70-32 96 10 24 40 44 92 44 54 0 82-18 92-44 12-30-12-76-34-96" fill="#fff0dc" stroke="#1e1a1f" stroke-width="12" />
+    <path d="M-18 172c46 4 84 28 124 44 26 10 54 18 78 10 24-8 52-32 74-54" stroke="#1e1a1f" stroke-width="12" fill="none" stroke-linecap="round" />
+    <path d="M44 112c-14-8-28-10-38 4-8 12-12 36-6 52 10 30 30 44 52 60" stroke="#1e1a1f" stroke-width="12" fill="none" stroke-linecap="round" />
+    <path d="M240 112c14-8 28-10 38 4 8 12 12 36 6 52-10 30-30 44-52 60" stroke="#1e1a1f" stroke-width="12" fill="none" stroke-linecap="round" />
+    <path d="M268 30c18 14 26 40 10 60-12 16-32 22-50 14" stroke="#1e1a1f" stroke-width="12" fill="#fdd3e0" />
+    <path d="M-6 30c-18 14-26 40-10 60 12 16 32 22 50 14" stroke="#1e1a1f" stroke-width="12" fill="#fdd3e0" />
+  </g>
+  <g transform="translate(220 210) rotate(-18)">
+    <path d="M0 90c26-30 44-66 70-94" stroke="#8f714a" stroke-width="16" stroke-linecap="round" fill="none" />
+    <path d="M-4 78c26-30 44-66 70-94" stroke="#c49968" stroke-width="12" stroke-linecap="round" fill="none" />
+    <circle cx="72" cy="-14" r="16" fill="#4c3521" />
+  </g>
+  <text x="80" y="120" font-family="'M PLUS Rounded 1c', 'Hiragino Sans', sans-serif" font-size="44" font-weight="800" fill="#1e1a1f">いくよー！</text>
+  <text x="72" y="160" font-family="'M PLUS Rounded 1c', 'Hiragino Sans', sans-serif" font-size="26" font-weight="700" fill="#5b5861">風船をパチン！</text>
+</svg>
