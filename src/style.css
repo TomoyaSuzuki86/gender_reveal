@@ -163,8 +163,8 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
 
 .balloon-visual {
   position: relative;
-  width: min(380px, 90vw);
-  height: min(520px, 120vw);
+  width: min(440px, 98vw);
+  height: min(600px, 138vw);
   display: grid;
   place-items: center;
 }
@@ -178,14 +178,14 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
 .balloon-visual img,
 .balloon-placeholder {
   position: absolute;
-  inset: 12% 12% 26% 12%;
+  inset: 10% 10% 22% 10%;
   width: auto;
   height: auto;
-  max-width: 76%;
-  max-height: 70%;
+  max-width: 82%;
+  max-height: 76%;
   object-fit: contain;
   transform-origin: center;
-  transform: scale(var(--count-scale, 0.75));
+  transform: scale(var(--count-scale, 0.95));
   transition: transform 0.6s ease-out;
   clip-path: ellipse(46% 42% at 50% 42%);
   border-radius: 28%;
