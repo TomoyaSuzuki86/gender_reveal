@@ -172,9 +172,9 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
 .balloon-image {
   position: relative;
   width: 100%;
-  aspect-ratio: 2 / 3;
-  max-height: 60vh;
-  border-radius: 48% 48% 44% 44% / 56% 56% 44% 44%;
+  aspect-ratio: 1 / 1.1;
+  max-height: 58vh;
+  border-radius: 50% 50% 44% 44% / 60% 60% 42% 42%;
   overflow: hidden;
   border: 8px solid #1b1b1b;
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
@@ -187,7 +187,8 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
 .balloon-placeholder {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   transform-origin: center;
   transform: scale(var(--count-scale, 0.95));
   transition: transform 0.6s ease-out;
