@@ -15,27 +15,17 @@
         <header class="hero">
           <p class="eyebrow">Gender Reveal</p>
           <p class="title" id="start-title">
-            風船をタップしてね！<br />
-             <span id="secs-here">30</span> 秒後に性別が公開されるよ
+            画像をタップしてください。<br />
+            タップしてから <span id="secs-here">30</span> 秒後に性別が公開されます。
           </p>
           <p class="subtitle">
-            いよいよ性別発表だよ！！
+            スマホを縦向きのまま持って待っていてください。音や共有はありません。
           </p>
         </header>
 
         <div class="balloon-wrap">
-          <button class="balloon" id="balloon-start" type="button" aria-label="風船をタップして開始">
-            <svg viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <defs>
-                <linearGradient id="balloon-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#fff4d9" />
-                  <stop offset="100%" stop-color="#ffe0f0" />
-                </linearGradient>
-              </defs>
-              <path d="M100 14c-46 0-82 37-82 88 0 62 44 120 82 120s82-58 82-120C182 51 146 14 100 14z" fill="url(#balloon-grad)" stroke="#1b1b1b" stroke-width="10" />
-              <path d="M92 214c0 10 16 10 16 0" fill="none" stroke="#1b1b1b" stroke-width="10" stroke-linecap="round" />
-              <path d="M100 222v46" fill="none" stroke="#1b1b1b" stroke-width="10" stroke-linecap="round" />
-            </svg>
+          <button class="balloon" id="balloon-start" type="button" aria-label="タップして開始">
+            <img src="./assets/最初の画像.png" alt="開始イメージ" />
           </button>
         </div>
       </div>
@@ -49,8 +39,9 @@
 
         <div class="count-visual" aria-live="polite" aria-atomic="true">
           <div class="count-image" aria-hidden="true">
-            <img id="count-img" alt="演出中の画像" />
-            <div class="count-placeholder" id="count-placeholder" hidden></div>
+            <img id="count-img" class="count-layer" alt="演出中の画像" />
+            <video id="count-video" class="count-layer" aria-hidden="true" playsinline muted loop hidden></video>
+            <div class="count-placeholder count-layer" id="count-placeholder" hidden></div>
           </div>
           <div class="count-number" id="count-num" aria-hidden="true">30</div>
         </div>

@@ -141,18 +141,18 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
 }
 
 .balloon {
-  width: min(320px, 80vw);
-  height: min(430px, 96vw);
+  width: min(360px, 90vw);
+  height: auto;
   cursor: pointer;
   border: none;
   background: transparent;
   padding: 0;
-  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.1));
 }
 
-.balloon svg { width: 100%; height: 100%; display: block; }
+.balloon img { width: 100%; height: auto; display: block; }
 .balloon:active { transform: translateY(1px); }
-.balloon:focus-visible { outline: 4px solid rgba(0, 0, 0, 0.2); border-radius: 32px; }
+.balloon:focus-visible { outline: 4px solid rgba(0, 0, 0, 0.2); border-radius: 24px; }
+
 
 
 .count-visual {
@@ -171,14 +171,23 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
   padding: 18px;
   border-radius: 28px;
   overflow: hidden;
-  border: 8px solid #1b1b1b;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.14);
-  background: linear-gradient(145deg, #fff7ff, #eaf6ff);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14);
+  background: linear-gradient(145deg, #fff, #f3f7ff);
   display: grid;
   place-items: center;
 }
 
+.count-layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
 .count-image img,
+.count-image video,
 .count-placeholder {
   width: 100%;
   height: 100%;
@@ -190,8 +199,22 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
   text-align: center;
   display: grid;
   place-items: center;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
+}
+
+.count-image video {
+  background: transparent;
+  z-index: 1;
+}
+
+.count-placeholder {
+  display: none;
+  z-index: 3;
+}
+
+.count-placeholder:not([hidden]) {
+  display: grid;
 }
 
 .count-placeholder {
@@ -235,8 +258,8 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
   position: absolute;
   inset: -14px;
   border-radius: inherit;
-  border: 12px solid rgba(255, 255, 255, 0.9);
-  filter: blur(20px);
+  box-shadow: 0 0 42px rgba(255, 255, 255, 0.85);
+  filter: blur(18px);
   z-index: 0;
   pointer-events: none;
 }

@@ -12,37 +12,37 @@ const CONFIG = {
     "./assets/wait-05.png",
     "./assets/wait-06.png",
   ],
-  finalCueImageUrl: "./assets/hamster-burst.svg",
+  finalCueImageUrl: "./assets/ハムスター風船割る動画.mp4", // 動画に置換
   finalCueMessage: "いくよー！",
-  finalCueDurationMs: 1000,
+  finalCueDurationMs: 3000,
   flashDurationMs: 500,
   messagePool: [
     "ドキドキ…",
     "深呼吸…",
     "心の準備はOK？",
-    "やっぱり男の子かな？",
-    "まさかの女の子かな？",
-    "どっちにしても、二人が仲良しだといいな",
-    "いよいよ発表です！！",
-    "目を閉じて想像してみて…",
-    "拍手の準備はできた？",
+    "わくわくしてきた…",
+    "あと少し…",
+    "スマホはしっかり持っててね",
+    "みんなの目がキラキラしてる",
+    "拍手の準備を！",
     "家族の笑顔が浮かぶね",
-    "カウントが進むたびにドキドキ…！",
-    "あと少しでわかるよ！",
-    "スマホをしっかり持っててね",
+    "この瞬間を楽しもう",
     "誰と祝うか思い浮かべてみて",
-    "心臓の音が聞こえそう！",
-    "幸せな時間を共有しよう",
+    "鼓動が早くなるね",
+    "まもなく…！",
+    "深呼吸、吸って吐いて",
+    "さあ、カウントは続くよ",
+    "光の中から生まれるように…",
+    "想像が膨らむね",
+    "手に汗…！",
+    "カウントが進むたびにドキドキ",
     "あとちょっと、深呼吸…",
-    "みんなのワクワクを感じるね",
-    "準備はいい？",
-    "光の中から生まれるよ",
-    "最後まで見逃さないで！",
-    "とびきりの瞬間が近づいてる",
+    "準備はできた？",
+    "最後まで見逃さないでね",
   ],
   text: {
-    boy: { revealTitle: "男の子です！", revealSub: "やっぱり～～！！！" },
-    girl: { revealTitle: "女の子です！", revealSub: "まさかの女の子でした～～！！！" },
+    boy: { revealTitle: "男の子です！", revealSub: "元気いっぱい、わんぱくヒーロー参上！" },
+    girl: { revealTitle: "女の子です！", revealSub: "かわいさ満点、キラキラプリンセス誕生！" },
   },
   enableUrlParamOverride: false,
 };
@@ -53,7 +53,6 @@ let countdownStartMs = null;
 let countdownEndMs = null;
 let started = false;
 let lastBucket = -1;
-let lastMessage = "";
 let messageQueue = [];
 let paused = false;
 let pausedMsLeft = 0;
@@ -72,6 +71,7 @@ const secsHere = document.getElementById("secs-here");
 const countTitle = document.getElementById("count-title");
 const countNum = document.getElementById("count-num");
 const countImg = document.getElementById("count-img");
+const countVideo = document.getElementById("count-video");
 const countPlaceholder = document.getElementById("count-placeholder");
 const countAria = document.getElementById("count-aria");
 const revealImg = document.getElementById("reveal-img");
@@ -142,7 +142,9 @@ function init() {
     const revealUrl = selectedGender === "boy" ? CONFIG.boyImageUrl : CONFIG.girlImageUrl;
     const waitUrls = Array.isArray(CONFIG.countdownImageUrls) ? CONFIG.countdownImageUrls : [];
     const preloadList = [preload(revealUrl), ...waitUrls.map(preload)];
-    if (CONFIG.finalCueImageUrl) preloadList.push(preload(CONFIG.finalCueImageUrl));
+    if (CONFIG.finalCueImageUrl && !CONFIG.finalCueImageUrl.endsWith(".mp4")) {
+      preloadList.push(preload(CONFIG.finalCueImageUrl));
+    }
     Promise.allSettled(preloadList).catch(() => {});
   }
 
@@ -161,8 +163,7 @@ function startCountdown(seconds) {
   countdownStartMs = now;
   countdownEndMs = now + seconds * 1000;
   lastBucket = -1;
-  lastMessage = "";
-  resetMessageQueue();
+  messageQueue = [...CONFIG.messagePool];
   paused = false;
   pausedMsLeft = 0;
   revealPending = false;
@@ -176,42 +177,60 @@ function startCountdown(seconds) {
   countdownTimer = setInterval(tickCountdown, 100);
 }
 
-function resetMessageQueue() {
-  const pool = Array.isArray(CONFIG.messagePool)
-    ? CONFIG.messagePool.filter((s) => typeof s === "string" && s.trim() !== "")
-    : [];
-  messageQueue = [...pool]; // 順番通りに表示する
-}
-
 function pickNextMessage() {
-  if (messageQueue.length === 0) resetMessageQueue();
+  if (messageQueue.length === 0) messageQueue = [...CONFIG.messagePool];
   return messageQueue.shift() || "";
 }
 
 function updateCountImageScale(msLeft) {
   if (!countImg) return;
   const totalMs = Math.max(1, CONFIG.revealSeconds * 1000);
-  const progress = Math.min(1, Math.max(0, 1 - (msLeft / totalMs)));
+  const progress = Math.min(1, Math.max(0, 1 - msLeft / totalMs));
   const minScale = 0.95;
   const maxScale = 1.2;
   const scale = minScale + (maxScale - minScale) * progress;
   countImg.style.setProperty("--count-scale", scale.toFixed(4));
+  if (countVideo) countVideo.style.setProperty("--count-scale", scale.toFixed(4));
 }
 
 function setDisplayImage(url, placeholderText) {
   if (!countImg || !countPlaceholder) return;
+  const isVideo = typeof url === "string" && url.toLowerCase().endsWith(".mp4");
+
+  countPlaceholder.hidden = true;
+  countImg.hidden = false;
+  countImg.removeAttribute("src");
+  countImg.dataset.src = "";
+  if (countVideo) {
+    countVideo.hidden = true;
+    countVideo.pause();
+    countVideo.removeAttribute("src");
+    countVideo.load();
+  }
+
   if (!url || typeof url !== "string") {
-    countImg.removeAttribute("src");
     countPlaceholder.hidden = false;
     countPlaceholder.textContent = placeholderText || "画像を読み込めませんでした";
+    countImg.hidden = true;
     return;
   }
 
-  countPlaceholder.hidden = true;
+  if (isVideo && countVideo) {
+    countImg.hidden = true;
+    countVideo.hidden = false;
+    countVideo.onloadeddata = () => { countPlaceholder.hidden = true; };
+    countVideo.onerror = () => {
+      countVideo.hidden = true;
+      countPlaceholder.hidden = false;
+      countPlaceholder.textContent = placeholderText || "動画を読み込めませんでした";
+    };
+    countVideo.src = url;
+    countVideo.currentTime = 0;
+    countVideo.play().catch(() => {});
+    return;
+  }
 
-  countImg.onload = () => {
-    countPlaceholder.hidden = true;
-  };
+  countImg.onload = () => { countPlaceholder.hidden = true; };
   countImg.onerror = () => {
     countImg.removeAttribute("src");
     countPlaceholder.hidden = false;
@@ -222,6 +241,27 @@ function setDisplayImage(url, placeholderText) {
     countImg.dataset.src = url;
     countImg.src = url;
   }
+  countPlaceholder.hidden = true;
+  countImg.hidden = false;
+}
+
+function setCountdownImage(bucket) {
+  const list = Array.isArray(CONFIG.countdownImageUrls) ? CONFIG.countdownImageUrls : [];
+  if (list.length === 0) {
+    setDisplayImage(null, "演出画像を設定してください");
+    return;
+  }
+
+  const idx = Math.min(bucket, list.length - 1);
+  const url = list[idx];
+  if (!url || typeof url !== "string") return;
+
+  setDisplayImage(url, "演出画像を読み込めませんでした");
+  if (countVideo) {
+    countVideo.currentTime = 0;
+  }
+  countPlaceholder.hidden = true;
+  countImg.hidden = !url || (typeof url === "string" && url.toLowerCase().endsWith(".mp4"));
 }
 
 function setCountdownImage(bucket) {
@@ -248,13 +288,13 @@ function tickCountdown() {
   countAria.textContent = `残り${secLeft}秒`;
   updateCountImageScale(msLeft);
 
-  const elapsedMs = Math.max(0, now - countdownStartMs);
+  const elapsedMs = Math.max(0, (CONFIG.revealSeconds * 1000) - msLeft);
   const bucket = Math.floor(elapsedMs / 5000);
 
   if (bucket !== lastBucket) {
     lastBucket = bucket;
-    lastMessage = pickNextMessage();
-    countTitle.innerHTML = escapeHtml(lastMessage).replace(/\n/g, "<br>");
+    const nextMsg = pickNextMessage();
+    countTitle.innerHTML = escapeHtml(nextMsg).replace(/\n/g, "<br>");
     setCountdownImage(bucket);
   }
 
@@ -271,9 +311,9 @@ function startFinalCue() {
   finalCueRunning = true;
   const cueMessage = CONFIG.finalCueMessage || "いくよー！";
   countTitle.innerHTML = escapeHtml(cueMessage).replace(/\n/g, "<br>");
-  setDisplayImage(CONFIG.finalCueImageUrl, "クライマックス画像を読み込めませんでした");
+  setDisplayImage(CONFIG.finalCueImageUrl, "クライマックス素材を読み込めませんでした");
   countNum.textContent = "0";
-  countAria.textContent = "発表まであと少し";
+  countAria.textContent = "まもなく発表";
   updateCountImageScale(0);
 
   const duration = Math.max(0, CONFIG.finalCueDurationMs || 1000);
@@ -371,7 +411,7 @@ function resumeCountdown() {
   countdownStartMs = now;
   countdownEndMs = now + pausedMsLeft;
   pausedMsLeft = 0;
-  updateCountImageScale(pausedMsLeft);
+  updateCountImageScale(countdownEndMs - countdownStartMs);
   tickCountdown();
   countdownTimer = setInterval(tickCountdown, 100);
   updatePauseButton();
@@ -411,7 +451,7 @@ btnReset.addEventListener("click", () => {
   countdownStartMs = null;
   countdownEndMs = null;
   lastBucket = -1;
-  lastMessage = "";
+  messageQueue = [];
   paused = false;
   pausedMsLeft = 0;
   revealPending = false;
@@ -431,7 +471,14 @@ btnReset.addEventListener("click", () => {
   revealImg.removeAttribute("src");
   countImg.removeAttribute("src");
   countImg.dataset.src = "";
+  if (countVideo) {
+    countVideo.pause();
+    countVideo.removeAttribute("src");
+    countVideo.load();
+    countVideo.hidden = true;
+  }
   countPlaceholder.hidden = true;
+  countImg.hidden = false;
 
   goTo("start");
   setTimeout(() => balloonStart.focus(), 0);
