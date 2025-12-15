@@ -137,17 +137,17 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
   width: 100%;
   display: grid;
   place-items: center;
-  margin: 24px 0 12vh;
+  margin: 24px 0 10vh;
 }
 
 .balloon {
-  width: min(220px, 60vw);
-  height: min(280px, 72vw);
+  width: min(320px, 80vw);
+  height: min(430px, 96vw);
   cursor: pointer;
   border: none;
   background: transparent;
   padding: 0;
-  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.08));
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.1));
 }
 
 .balloon svg { width: 100%; height: 100%; display: block; }
@@ -158,37 +158,50 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
   width: 100%;
   display: grid;
   place-items: center;
-  margin-top: 12px;
+  margin-top: 0;
 }
 
-.count-frame {
-  width: min(360px, 88vw);
-  height: min(360px, 88vw);
-  border-radius: 28px;
-  background: transparent;
-  box-shadow: none;
-  overflow: hidden;
+.balloon-visual {
   position: relative;
+  width: min(380px, 90vw);
+  height: min(520px, 120vw);
   display: grid;
   place-items: center;
-  clip-path: inset(0 round 28px);
 }
 
-.count-frame img {
+.balloon-svg {
   width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.balloon-visual img,
+.balloon-placeholder {
+  position: absolute;
+  inset: 12% 12% 26% 12%;
+  width: auto;
+  height: auto;
+  max-width: 76%;
+  max-height: 70%;
   object-fit: contain;
   transform-origin: center;
   transform: scale(var(--count-scale, 0.75));
   transition: transform 0.6s ease-out;
-  display: block;
-  border-radius: inherit;
+  clip-path: ellipse(46% 42% at 50% 42%);
+  border-radius: 28%;
+  text-align: center;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+  pointer-events: none;
 }
 
-.count-placeholder {
+.balloon-placeholder {
   font-size: 15px;
   color: rgba(0, 0, 0, 0.55);
-  text-align: center;
-  padding: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
 }
 
 .count-number {
