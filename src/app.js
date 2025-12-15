@@ -12,6 +12,10 @@ const CONFIG = {
     "./assets/wait-05.png",
     "./assets/wait-06.png",
   ],
+  finalCueImageUrl: "./assets/hamster-burst.svg",
+  finalCueMessage: "いくよー！",
+  finalCueDurationMs: 1000,
+  flashDurationMs: 500,
   messagePool: [
     "ドキドキ…",
     "深呼吸…",
@@ -54,6 +58,8 @@ let messageQueue = [];
 let paused = false;
 let pausedMsLeft = 0;
 let revealPending = false;
+let finalCueTimeout = null;
+let finalCueRunning = false;
 
 const screens = {
   start: document.getElementById("screen-start"),
@@ -135,7 +141,9 @@ function init() {
   if (selectedGender) {
     const revealUrl = selectedGender === "boy" ? CONFIG.boyImageUrl : CONFIG.girlImageUrl;
     const waitUrls = Array.isArray(CONFIG.countdownImageUrls) ? CONFIG.countdownImageUrls : [];
-    Promise.allSettled([preload(revealUrl), ...waitUrls.map(preload)]).catch(() => {});
+    const preloadList = [preload(revealUrl), ...waitUrls.map(preload)];
+    if (CONFIG.finalCueImageUrl) preloadList.push(preload(CONFIG.finalCueImageUrl));
+    Promise.allSettled(preloadList).catch(() => {});
   }
 
   goTo("start");
@@ -158,6 +166,8 @@ function startCountdown(seconds) {
   paused = false;
   pausedMsLeft = 0;
   revealPending = false;
+  finalCueRunning = false;
+  clearFinalCue();
   updatePauseButton();
   setCountdownImage(0);
   updateCountImageScale(countdownEndMs - countdownStartMs);
@@ -167,7 +177,9 @@ function startCountdown(seconds) {
 }
 
 function resetMessageQueue() {
-  const pool = Array.isArray(CONFIG.messagePool) ? CONFIG.messagePool.filter((s) => typeof s === "string" && s.trim() !== "") : [];
+  const pool = Array.isArray(CONFIG.messagePool)
+    ? CONFIG.messagePool.filter((s) => typeof s === "string" && s.trim() !== "")
+    : [];
   messageQueue = [...pool]; // 順番通りに表示する
 }
 
@@ -186,19 +198,16 @@ function updateCountImageScale(msLeft) {
   countImg.style.setProperty("--count-scale", scale.toFixed(4));
 }
 
-function setCountdownImage(bucket) {
-  const list = Array.isArray(CONFIG.countdownImageUrls) ? CONFIG.countdownImageUrls : [];
-  if (list.length === 0) {
+function setDisplayImage(url, placeholderText) {
+  if (!countImg || !countPlaceholder) return;
+  if (!url || typeof url !== "string") {
     countImg.removeAttribute("src");
     countPlaceholder.hidden = false;
-    countPlaceholder.textContent = "演出画像を読み込めませんでした";
+    countPlaceholder.textContent = placeholderText || "画像を読み込めませんでした";
     return;
   }
 
   countPlaceholder.hidden = true;
-  const idx = Math.min(bucket, list.length - 1);
-  const url = list[idx];
-  if (!url || typeof url !== "string") return;
 
   countImg.onload = () => {
     countPlaceholder.hidden = true;
@@ -206,13 +215,27 @@ function setCountdownImage(bucket) {
   countImg.onerror = () => {
     countImg.removeAttribute("src");
     countPlaceholder.hidden = false;
-    countPlaceholder.textContent = "演出画像を読み込めませんでした";
+    countPlaceholder.textContent = placeholderText || "画像を読み込めませんでした";
   };
 
   if (countImg.dataset.src !== url) {
     countImg.dataset.src = url;
     countImg.src = url;
   }
+}
+
+function setCountdownImage(bucket) {
+  const list = Array.isArray(CONFIG.countdownImageUrls) ? CONFIG.countdownImageUrls : [];
+  if (list.length === 0) {
+    setDisplayImage(null, "演出画像を読み込めませんでした");
+    return;
+  }
+
+  const idx = Math.min(bucket, list.length - 1);
+  const url = list[idx];
+  if (!url || typeof url !== "string") return;
+
+  setDisplayImage(url, "演出画像を読み込めませんでした");
 }
 
 function tickCountdown() {
@@ -239,9 +262,34 @@ function tickCountdown() {
     if (!revealPending) {
       revealPending = true;
       stopCountdown();
-      flashThenReveal();
+      startFinalCue();
     }
   }
+}
+
+function startFinalCue() {
+  finalCueRunning = true;
+  const cueMessage = CONFIG.finalCueMessage || "いくよー！";
+  countTitle.innerHTML = escapeHtml(cueMessage).replace(/\n/g, "<br>");
+  setDisplayImage(CONFIG.finalCueImageUrl, "クライマックス画像を読み込めませんでした");
+  countNum.textContent = "0";
+  countAria.textContent = "発表まであと少し";
+  updateCountImageScale(0);
+
+  const duration = Math.max(0, CONFIG.finalCueDurationMs || 1000);
+  clearFinalCue();
+  finalCueTimeout = setTimeout(() => {
+    flashThenReveal();
+    revealPending = false;
+  }, duration);
+}
+
+function clearFinalCue() {
+  if (finalCueTimeout) {
+    clearTimeout(finalCueTimeout);
+    finalCueTimeout = null;
+  }
+  finalCueRunning = false;
 }
 
 function stopCountdown() {
@@ -252,6 +300,7 @@ function stopCountdown() {
 }
 
 function reveal() {
+  finalCueRunning = false;
   const t = CONFIG.text[selectedGender] || {};
   revealText.textContent = t.revealTitle || "おめでとうございます！";
   revealSub.textContent = t.revealSub || "";
@@ -273,7 +322,7 @@ btnRetry.addEventListener("click", () => {
 });
 
 btnPause.addEventListener("click", () => {
-  if (!started) return;
+  if (!started || finalCueRunning) return;
   if (paused) {
     resumeCountdown();
   } else {
@@ -286,6 +335,7 @@ btnSkip.addEventListener("click", () => {
   stopCountdown();
   paused = false;
   revealPending = false;
+  clearFinalCue();
   updateCountImageScale(0);
   reveal();
 });
@@ -301,7 +351,7 @@ function flashThenReveal() {
     flash.classList.remove("show");
     reveal();
     revealPending = false;
-  }, 500);
+  }, CONFIG.flashDurationMs || 500);
 }
 
 function pauseCountdown() {
@@ -365,6 +415,8 @@ btnReset.addEventListener("click", () => {
   paused = false;
   pausedMsLeft = 0;
   revealPending = false;
+  finalCueRunning = false;
+  clearFinalCue();
   updatePauseButton();
   updateCountImageScale(CONFIG.revealSeconds * 1000);
 
@@ -392,6 +444,8 @@ document.addEventListener("keydown", (e) => {
     paused = false;
     pausedMsLeft = 0;
     revealPending = false;
+    finalCueRunning = false;
+    clearFinalCue();
     updatePauseButton();
     goTo("start");
     setTimeout(() => balloonStart.focus(), 0);
@@ -406,6 +460,7 @@ function runSelfTests() {
   assert(CONFIG.messagePool.length >= 20, "messagePool has 20+ messages");
   assert(CONFIG.messagePool.every((s) => typeof s === "string"), "messagePool items are strings");
   assert(Array.isArray(CONFIG.countdownImageUrls), "countdownImageUrls is array");
+  assert(typeof CONFIG.finalCueImageUrl === "string", "finalCueImageUrl is string");
   const escaped = escapeHtml("a<b>c\n");
   assert(escaped.includes("&lt;"), "escapeHtml works");
   console.log("[SelfTest] OK");

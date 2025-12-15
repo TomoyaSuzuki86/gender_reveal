@@ -154,38 +154,32 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
 .balloon:active { transform: translateY(1px); }
 .balloon:focus-visible { outline: 4px solid rgba(0, 0, 0, 0.2); border-radius: 32px; }
 
+
 .count-visual {
   width: 100%;
   display: grid;
   place-items: center;
   margin-top: 0;
+  gap: 12px;
 }
 
-.balloon-visual {
+.count-image {
   position: relative;
   width: min(380px, 92vw);
-  display: grid;
-  justify-items: center;
-  gap: 10px;
-}
-
-.balloon-image {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1.28;
+  aspect-ratio: 1 / 1.05;
   max-height: 62vh;
-  padding: 12px 12px 20px;
-  border-radius: 54% 54% 46% 46% / 66% 66% 42% 42%;
+  padding: 18px;
+  border-radius: 28px;
   overflow: hidden;
   border: 8px solid #1b1b1b;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
-  background: linear-gradient(145deg, #fff4d9, #ffe0f0);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.14);
+  background: linear-gradient(145deg, #fff7ff, #eaf6ff);
   display: grid;
   place-items: center;
 }
 
-.balloon-visual img,
-.balloon-placeholder {
+.count-image img,
+.count-placeholder {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -200,36 +194,13 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
   pointer-events: none;
 }
 
-.balloon-placeholder {
+.count-placeholder {
   font-size: 15px;
   color: rgba(0, 0, 0, 0.55);
   padding: 12px;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.6);
   line-height: 1.6;
-}
-
-.balloon-string {
-  width: 4px;
-  height: 120px;
-  background: linear-gradient(#1b1b1b, #1b1b1b);
-  border-radius: 999px;
-  margin-top: -12px;
-  position: relative;
-}
-
-.balloon-string::after {
-  content: "";
-  position: absolute;
-  bottom: -12px;
-  left: 50%;
-  width: 30px;
-  height: 18px;
-  border-radius: 50% 50% 40% 40%;
-  border: 6px solid #1b1b1b;
-  border-top: none;
-  border-left-color: transparent;
-  border-right-color: transparent;
-  transform: translateX(-50%);
+  border-radius: 18px;
 }
 
 .count-number {
