@@ -180,7 +180,9 @@ function updateCountImageScale(msLeft) {
   if (!countImg) return;
   const totalMs = Math.max(1, CONFIG.revealSeconds * 1000);
   const progress = Math.min(1, Math.max(0, 1 - (msLeft / totalMs)));
-  const scale = 0.75 + (0.25 * progress);
+  const minScale = 0.95;
+  const maxScale = 1.2;
+  const scale = minScale + (maxScale - minScale) * progress;
   countImg.style.setProperty("--count-scale", scale.toFixed(4));
 }
 
@@ -198,6 +200,9 @@ function setCountdownImage(bucket) {
   const url = list[idx];
   if (!url || typeof url !== "string") return;
 
+  countImg.onload = () => {
+    countPlaceholder.hidden = true;
+  };
   countImg.onerror = () => {
     countImg.removeAttribute("src");
     countPlaceholder.hidden = false;
