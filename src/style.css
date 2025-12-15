@@ -163,32 +163,34 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
 
 .balloon-visual {
   position: relative;
-  width: min(440px, 98vw);
-  height: min(600px, 138vw);
+  width: min(380px, 92vw);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.balloon-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  max-height: 60vh;
+  border-radius: 48% 48% 44% 44% / 56% 56% 44% 44%;
+  overflow: hidden;
+  border: 8px solid #1b1b1b;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
+  background: linear-gradient(145deg, #fff4d9, #ffe0f0);
   display: grid;
   place-items: center;
 }
 
-.balloon-svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
 .balloon-visual img,
 .balloon-placeholder {
-  position: absolute;
-  inset: 10% 10% 22% 10%;
-  width: auto;
-  height: auto;
-  max-width: 82%;
-  max-height: 76%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transform-origin: center;
   transform: scale(var(--count-scale, 0.95));
   transition: transform 0.6s ease-out;
-  clip-path: ellipse(46% 42% at 50% 42%);
-  border-radius: 28%;
   text-align: center;
   display: grid;
   place-items: center;
@@ -200,8 +202,32 @@ body.bg-girl { background: var(--bg-girl); transition: background 0.4s ease; }
   font-size: 15px;
   color: rgba(0, 0, 0, 0.55);
   padding: 12px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.5);
   line-height: 1.6;
+}
+
+.balloon-string {
+  width: 4px;
+  height: 120px;
+  background: linear-gradient(#1b1b1b, #1b1b1b);
+  border-radius: 999px;
+  margin-top: -12px;
+  position: relative;
+}
+
+.balloon-string::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  width: 30px;
+  height: 18px;
+  border-radius: 50% 50% 40% 40%;
+  border: 6px solid #1b1b1b;
+  border-top: none;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  transform: translateX(-50%);
 }
 
 .count-number {

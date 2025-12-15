@@ -191,7 +191,7 @@ function setCountdownImage(bucket) {
   if (list.length === 0) {
     countImg.removeAttribute("src");
     countPlaceholder.hidden = false;
-    countPlaceholder.textContent = "演出画像を設定してください";
+    countPlaceholder.textContent = "演出画像を読み込めませんでした";
     return;
   }
 
